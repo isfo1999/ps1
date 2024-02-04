@@ -18,10 +18,10 @@ while ($true) {
                 break
             }
 
-            Write-Host "Received: $data"
+            Write-Host "> "
 
-            # Add your custom logic here to process the received data
-
+            $s = &$data
+            Write-Host $s
             # Echo back to the client
             $writer.WriteLine(">")
             &$data
