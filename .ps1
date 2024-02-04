@@ -1,5 +1,5 @@
 $listener = New-Object System.Net.Sockets.TcpListener ([System.Net.IPAddress]::Any, 8080)
-$listener.start()
+$listener.Start()
 
 Write-Host "Listening for connections on port 8080..."
 
@@ -18,13 +18,14 @@ while ($true) {
                 break
             }
 
-            Write-Host "> "
+            Write-Host "Received: $data"
 
-            $s = &$data
-            Write-Host $s
+            # Add your custom logic here to process the received data
+            # Example: Execute command and capture the output
+            $output = Invoke-Expression -Command $data
+
             # Echo back to the client
-            $writer.WriteLine(">")
-            &$data
+            $writer.WriteLine($output)
             $writer.Flush()
         }
 
