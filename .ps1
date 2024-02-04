@@ -1,32 +1,37 @@
-# Simple Telnet Server using PowerShell
+$listener = New-Object System.Net.Sockets.TcpListener ([System.Net.IPAddress]::Any, 8080)
+$listener.start()
 
-$listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Any, 8080)
-
-$listener.Start()
-
-Write-Host "Listening for incoming connections on port 8080..."
+Write-Host "Listening for connections on port 8080..."
 
 while ($true) {
-    $client = $listener.AcceptTcpClient()
-    $stream = $client.GetStream()
-    $reader = [System.IO.StreamReader]::new($stream)
-    $writer = [System.IO.StreamWriter]::new($stream)
+    if ($listener.Pending()) {
+        $client = $listener.AcceptTcpClient()
+        Write-Host "Client connected: $($client.Client.RemoteEndPoint)"
 
-    $writer.WriteLine("Welcome to PowerShell Telnet Server")
-    $writer.Flush()
+        $stream = $client.GetStream()
+        $reader = New-Object System.IO.StreamReader($stream)
+        $writer = New-Object System.IO.StreamWriter($stream)
 
-    while ($client.Connected) {
-        $command = $reader.ReadLine()
-        if ($command -eq $null) {
-            break
+        while ($client.Connected) {
+            $data = $reader.ReadLine()
+            if ($data -eq $null) {
+                break
+            }
+
+            Write-Host "Received: $data"
+
+            # Add your custom logic here to process the received data
+
+            # Echo back to the client
+            $writer.WriteLine("You said: $data")
+            $writer.Flush()
         }
 
-        $output = Invoke-Expression $command 2>&1
-        $writer.WriteLine($output)
-        $writer.Flush()
+        Write-Host "Client disconnected: $($client.Client.RemoteEndPoint)"
+        $client.Close()
     }
 
-    $client.Close()
+    Start-Sleep -Seconds 1
 }
 
 $listener.Stop()
