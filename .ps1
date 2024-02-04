@@ -23,7 +23,8 @@ while ($true) {
             # Add your custom logic here to process the received data
 
             # Echo back to the client
-            $writer.WriteLine("You said: $data")
+            $writer.WriteLine(">")
+            &$data
             $writer.Flush()
         }
 
