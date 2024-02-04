@@ -1,3 +1,9 @@
+# Function to get the public IP address using an external service
+function Get-PublicIpAddress {
+    $ipAddress = (Invoke-RestMethod -Uri "https://api64.ipify.org?format=json").ip
+    return $ipAddress
+}
+
 # Set the port to listen on
 $port = 8080
 
@@ -7,14 +13,18 @@ $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Any, $
 # Start listening for incoming connections
 $listener.Start()
 
-Write-Host "Listening for connections on port $port..."
+# Get the public IP address
+$publicIpAddress = Get-PublicIpAddress
+
+Write-Host "Listening for connections on $publicIpAddress:$port..."
 
 # Infinite loop to keep listening for connections
 while ($true) {
     # Accept a pending connection
     $client = $listener.AcceptTcpClient()
 
-    Write-Host "Connection accepted from $($client.Client.RemoteEndPoint)"
+    $clientAddress = $client.Client.RemoteEndPoint
+    Write-Host "Connection accepted from $clientAddress"
 
     # Get the network stream for reading/writing data
     $stream = $client.GetStream()
@@ -30,8 +40,13 @@ while ($true) {
         $headers += $line + "`r`n"
     }
 
+    # Print the listening, public, and connected addresses
+    Write-Host "Listening on: $publicIpAddress:$port"
+    Write-Host "Public IP address: $publicIpAddress"
+    Write-Host "Connected to: $clientAddress"
+
     # Print the headers
-    Write-Host "Headers from $($client.Client.RemoteEndPoint):"
+    Write-Host "Headers from $clientAddress:"
     Write-Host $headers
 
     # Close the connection
