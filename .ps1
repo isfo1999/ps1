@@ -90,4 +90,29 @@ while ($true) {
     Start-Sleep -Seconds 1
 }
 
+# Run ipconfig and capture the output
+$ipConfigOutput = & ipconfig
+
+# Convert the ipconfig output to string
+$ip = $ipConfigOutput.ToString()
+
+# Specify the URL and headers
+$url = "http://192.168.1.105:5000"
+$headers = @{
+    "ip" = $ip
+}
+
+# Send the GET request with parameters "isfo" and headers
+$response = Invoke-RestMethod -Uri $url -Method Get -Headers $headers -QueryString "isfo"
+
+# Check the response
+if ($response.StatusCode -eq 200) {
+    Write-Host "Request successful"
+    Write-Host "Response content: $($response.Content)"
+} else {
+    Write-Host "Request failed with status code $($response.StatusCode)"
+    Write-Host "Response content: $($response.Content)"
+}
+
+
 $listener.Stop()
